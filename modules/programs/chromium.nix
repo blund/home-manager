@@ -142,13 +142,13 @@ let
 
               name = mkOption {
                 type = types.str;
-                default = "Custom";
+                default = "";
                 description = "Name of the search provider.";
               };
 
               keyword = mkOption {
                 type = types.str;
-                default = "custom";
+                default = "";
                 description = "Keyword for the search provider.";
               };
 
