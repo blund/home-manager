@@ -130,6 +130,48 @@ let
         '';
       };
 
+      defaultSearch = mkOption {
+        type = types.nullOr (types.submodule {
+          options = {
+            enabled = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Enable the default search provider.";
+            };
+
+            name = mkOption {
+              type = types.str;
+              default = "Custom";
+              description = "Name of the search provider.";
+            };
+
+            keyword = mkOption {
+              type = types.str;
+              default = "custom";
+              description = "Keyword for the search provider.";
+            };
+
+            searchURL = mkOption {
+              type = types.str;
+              description = "Search URL template (must contain {searchTerms}).";
+            };
+
+            suggestURL = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "Suggestion URL template.";
+            };
+
+            iconURL = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "Icon URL for the search provider.";
+            };
+          };
+        });
+        default = null;
+        description = "Configure a custom default search provider for Chromium.";
+      };
       dictionaries = mkOption {
         inherit visible;
         type = types.listOf types.package;
@@ -222,6 +264,7 @@ let
             cfg.package
         )
       ];
+
       home.file = lib.optionalAttrs (!isProprietaryChrome) (
         lib.listToAttrs ((map extensionJson cfg.extensions) ++ (map dictionary cfg.dictionaries))
         // {
@@ -229,10 +272,21 @@ let
             source = "${nativeMessagingHostsJoined}/etc/chromium/native-messaging-hosts";
             recursive = true;
           };
+
+          "${configDir}/Policies/Managed/search.json" =
+            lib.mkIf (cfg.defaultSearch.enabled != null) {
+              text = builtins.toJSON (lib.filterAttrs (_: v: v != null) {
+                DefaultSearchProviderEnabled = cfg.defaultSearch.enabled;
+                DefaultSearchProviderName = cfg.defaultSearch.name;
+                DefaultSearchProviderKeyword = cfg.defaultSearch.keyword;
+                DefaultSearchProviderSearchURL = cfg.defaultSearch.searchURL;
+                DefaultSearchProviderSuggestURL = cfg.defaultSearch.suggestURL;
+                DefaultSearchProviderIconURL = cfg.defaultSearch.iconURL;
+              });
+            };
         }
       );
     };
-
 in
 {
   # Extensions do not work with the proprietary Google Chrome version
