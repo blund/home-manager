@@ -275,7 +275,7 @@ let
             recursive = true;
           };
 
-          "${configDir}/Policies/Managed/search.json" = lib.mkIf (cfg.defaultSearch.enabled != null) {
+          "${configDir}/Policies/Managed/search.json" = lib.mkIf (cfg.defaultSearch != null) {
             text = builtins.toJSON (
               lib.filterAttrs (_: v: v != null) {
                 DefaultSearchProviderEnabled = cfg.defaultSearch.enabled;
